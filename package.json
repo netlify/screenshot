@@ -1,0 +1,12 @@
+{
+  "name": "screenshot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:netlify/screenshot.git",
+  "author": "Bryce Kahle <bryce@netlify.com>",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "puppeteer": "^1.1.1"
+  },
+  "private": true
+}
