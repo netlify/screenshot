@@ -31,7 +31,8 @@ http
         console.log("Launching Chrome");
         const config = {
           ignoreHTTPSErrors: true,
-          args: ["--no-sandbox", "--disable-setuid-sandbox"]
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
+          executablePath: process.env.CHROME_BIN
         };
         browser = await puppeteer.launch(config);
       }
@@ -93,11 +94,11 @@ http
         } status=200 width=${width} height=${height} delay=${delay} clip="${clipstr}"`
       );
     } catch (e) {
-      const { message = "" } = e;
+      const { message = "", stack = "" } = e;
       res.writeHead(500, {
         "content-type": "text/plain"
       });
-      res.end("Error generating screenshot.\n\n" + message);
+      res.end(`Error generating screenshot.\n\n${message}\n\n${stack}`);
 
       const duration = Date.now() - start;
       console.log(
