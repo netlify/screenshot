@@ -130,17 +130,15 @@ puppeteer
   .launch(config)
   .then(b => {
     browser = b;
-    server.listen(process.env.PORT || 3001);
+    const port = process.env.PORT || 3001;
+    server.listen(port, () => {
+      console.log(`listening on port ${port}`);
+    });
   })
   .catch(err => {
     console.error("Error launching chrome: ", err);
     process.exit(1);
   });
-
-process.on("SIGINT", () => {
-  if (browser) browser.close();
-  process.exit();
-});
 
 process.on("unhandledRejection", (reason, p) => {
   console.log("Unhandled Rejection at:", p, "reason:", reason);
