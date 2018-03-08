@@ -96,25 +96,13 @@ const server = http.createServer(async (req, res) => {
 
     const duration = Date.now() - start;
     console.log(`url=${url} timing=${duration} status=500 error="${message}"`);
-
-    // Handle websocket not opened error
-    if (/not opened/i.test(message) && browser) {
-      console.error("chrome web socket failed");
-      try {
-        page.removeAllListeners();
-        page.close();
-        page = null;
-        browser.close();
-        browser = null;
-      } catch (err) {
-        console.warn(`chrome could not be killed ${err.message}`);
-        browser = null;
-      }
-    }
   } finally {
     if (page) {
       page.removeAllListeners();
-      page.close();
+      await page.deleteCookie(await page.cookies());
+      // tip from https://github.com/GoogleChrome/puppeteer/issues/1490
+      await page.goto("about:blank");
+      await page.close();
       page = null;
     }
   }
