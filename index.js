@@ -54,15 +54,19 @@ const server = http.createServer(async (req, res) => {
     await new Promise(resolve => setTimeout(resolve, delay));
 
     // Pause all media and stop buffering
-    page.frames().forEach(frame => {
-      frame.evaluate(() => {
-        document.querySelectorAll("video, audio").forEach(m => {
-          if (!m) return;
-          if (m.pause) m.pause();
-          m.preload = "none";
-        });
-      });
-    });
+    await Promise.all(
+      page.frames().map(frame => {
+        return frame
+          .evaluate(() => {
+            document.querySelectorAll("video, audio").forEach(m => {
+              if (!m) return;
+              if (m.pause) m.pause();
+              m.preload = "none";
+            });
+          })
+          .catch(err => {}); // swallow errors
+      })
+    );
 
     const screenshot = await page.screenshot({
       type: "png",
