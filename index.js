@@ -99,7 +99,8 @@ const server = http.createServer(async (req, res) => {
   } finally {
     if (page) {
       page.removeAllListeners();
-      await page.deleteCookie(await page.cookies());
+      const cookies = await page.cookies();
+      await page.deleteCookie(...cookies);
       // tip from https://github.com/GoogleChrome/puppeteer/issues/1490
       await page.goto("about:blank");
       await page.close();
@@ -127,6 +128,14 @@ puppeteer
     console.error("Error launching chrome: ", err);
     process.exit(1);
   });
+
+const stopServer = async () => {
+  server.close(() => {
+    process.exit();
+  });
+};
+process.on("SIGINT", stopServer);
+process.on("SIGTERM", stopServer);
 
 process.on("unhandledRejection", (reason, p) => {
   console.log("Unhandled Rejection at:", p, "reason:", reason);
