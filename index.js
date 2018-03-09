@@ -99,12 +99,17 @@ const server = http.createServer(async (req, res) => {
   } finally {
     if (page) {
       page.removeAllListeners();
-      const cookies = await page.cookies();
-      await page.deleteCookie(...cookies);
-      // tip from https://github.com/GoogleChrome/puppeteer/issues/1490
-      await page.goto("about:blank");
-      await page.close();
-      page = null;
+      try {
+        const cookies = await page.cookies();
+        await page.deleteCookie(...cookies);
+        // tip from https://github.com/GoogleChrome/puppeteer/issues/1490
+        await page.goto("about:blank", { timeout: 1000 }).catch(err => {});
+      } catch {
+        // intentionally empty
+      } finally {
+        page.close().catch(err => {});
+        page = null;
+      }
     }
   }
 });
