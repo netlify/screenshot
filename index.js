@@ -112,7 +112,11 @@ const server = http.createServer(async (req, res) => {
 console.log("Launching Chrome");
 const config = {
   ignoreHTTPSErrors: true,
-  args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    '--js-flags="--max_old_space_size=500"'
+  ],
   executablePath: process.env.CHROME_BIN
 };
 puppeteer
