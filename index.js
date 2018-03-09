@@ -115,6 +115,7 @@ const config = {
   args: [
     "--no-sandbox",
     "--disable-setuid-sandbox",
+    "--disable-gpu",
     '--js-flags="--max_old_space_size=500"'
   ],
   executablePath: process.env.CHROME_BIN
