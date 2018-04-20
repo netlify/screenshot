@@ -121,7 +121,8 @@ const config = {
     "--no-sandbox",
     "--disable-setuid-sandbox",
     "--disable-gpu",
-    '--js-flags="--max_old_space_size=500"'
+    '--js-flags="--max_old_space_size=200"',
+    "--renderer-process-limit 10"
   ],
   executablePath: process.env.CHROME_BIN
 };
