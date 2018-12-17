@@ -10,7 +10,7 @@ pipeline {
   }
 
   parameters {
-    string(name: 'BGIT_REF', defaultValue: 'master',                      description: 'Repository git reference. Used for pulling the Docker image generated during the git_ref build')
+    string(name: 'GIT_REF', defaultValue: 'master',                      description: 'Repository git reference. Used for pulling the Docker image generated during the git_ref build')
     string(name: 'K8S_PROVIDER',       defaultValue: 'gke',                         description: 'K8S provider')
     string(name: 'K8S_CLUSTER',        defaultValue: 'netlify-origin-gc-dsm-1',     description: 'K8S cluster')
     string(name: 'K8S_NODEPOOL',       defaultValue: 'default',                     description: 'K8S nodepool')
