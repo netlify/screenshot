@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: screenshot
+  namespace: {{ K8S_ENV }}
+  labels:
+    app: screenshot
+    git_commit: {{ BUILD_GIT_COMMIT }}
+    git_branch: {{ BUILD_GIT_BRANCH }}
+spec:
+  ports:
+    - name: http
+      port: 3002
+      protocol: TCP
+      targetPort: 3002
+  selector:
+    app: screenshot
