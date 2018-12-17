@@ -1,0 +1,37 @@
+pipeline {
+  agent any
+
+  options {
+    timestamps()
+  }
+
+  environment {
+    CI = 'true'
+  }
+
+  parameters {
+    string(name: 'BGIT_REF', defaultValue: 'master',                      description: 'Repository git reference. Used for pulling the Docker image generated during the git_ref build')
+    string(name: 'K8S_PROVIDER',       defaultValue: 'gke',                         description: 'K8S provider')
+    string(name: 'K8S_CLUSTER',        defaultValue: 'netlify-origin-gc-dsm-1',     description: 'K8S cluster')
+    string(name: 'K8S_NODEPOOL',       defaultValue: 'default',                     description: 'K8S nodepool')
+    string(name: 'K8S_ENV',            defaultValue: 'staging',                     description: 'K8S environment')
+    string(name: 'K8S_DEBUG',          defaultValue: 'false',                       description: 'Enable debug mode on the K8S pods')
+    string(name: 'GCS_BUCKET',         defaultValue: 'gs://netlify-infrastructure', description: 'GCS bucket where the artifacts are stored')
+  }
+
+  stages {
+    stage("Build & Publish K8S manifests") {
+      steps {
+        withCredentials([file(credentialsId: 'google-container-registry-push', variable: 'GCLOUD_SECRET_FILE')]) {
+          sh "kubernetes/build-k8s.sh"
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+        archiveArtifacts artifacts: 'spinnaker-artifacts.yml', fingerprint: true
+    }
+  }
+}
