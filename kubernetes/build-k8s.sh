@@ -72,7 +72,7 @@ export BUILD_GIT_BRANCH=$(gsutil cat $BB_GCS_PATH/git-branch)
 
 # Build manifests
 suffix=$GIT_COMMIT.$(date +%s%N) # Different jobs may build the same commit SHA. Make the filenames different using a timestamp
-jinja2_cmd <screenshot.yml.j2 >deployment.$suffix.yml
+jinja2_cmd <pod.yml.j2 >deployment.$suffix.yml
 jinja2_cmd <balancer.yml.j2 >balancer.$suffix.yml
 
 # Upload manifests
