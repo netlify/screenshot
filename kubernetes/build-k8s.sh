@@ -23,7 +23,7 @@ sys.stdout.write(
 set -xe
 set -o pipefail
 
-if [[ $screenshot_GIT_REF == "" ]]; then
+if [[ $SCREENSHOT_GIT_REF == "" ]]; then
   echo "\$screenshot_GIT_REF not provided"
   exit 1
 fi
@@ -50,7 +50,7 @@ fi
 
 # Prepare paths
 SPINNAKER_GCS_PATH="$GCS_BUCKET/spinnaker-k8s-artifacts"
-BB_GCS_PATH="$GCS_BUCKET/screenshot-k8s-artifacts/$screenshot_GIT_REF"
+BB_GCS_PATH="$GCS_BUCKET/screenshot-k8s-artifacts/$SCREENSHOT_GIT_REF"
 
 # Prepare GCS auth
 export CLOUDSDK_CORE_DISABLE_PROMPTS=1
@@ -64,7 +64,7 @@ IMAGE_DIGEST=$(gsutil cat $BB_GCS_PATH/image-digest)
 gsutil cp -r $BB_GCS_PATH/templates/* .
 
 # i.e.: gs://netlify-infrastructure/spinnaker-k8s-artifacts/gke/origin-poc/production/screenshot/master
-K8S_GS_PATH_BASE=$SPINNAKER_GCS_PATH/$K8S_PROVIDER/$K8S_CLUSTER/$K8S_ENV/screenshot/$screenshot_GIT_REF
+K8S_GS_PATH_BASE=$SPINNAKER_GCS_PATH/$K8S_PROVIDER/$K8S_CLUSTER/$K8S_ENV/screenshot/$SCREENSHOT_GIT_REF
 
 # Get git info from the build being deployed
 export BUILD_GIT_COMMIT=$(gsutil cat $BB_GCS_PATH/git-commit)
