@@ -3,6 +3,8 @@
 #
 FROM node:8.14.0-jessie
 
+ENV SCREENSHOT_PATH "/opt/apps/screenshot"
+
 
 
 ENV IMAGE_OPTIM_DEPS "advancecomp gifsicle jpegoptim libjpeg-progs optipng pngcrush fontconfig fontconfig-config libfontconfig1 unzip build-essential g++ flex bison gperf ruby perl libsqlite3-dev libfontconfig1-dev libicu-dev libfreetype6 libssl-dev libpng-dev libjpeg-dev"
@@ -25,5 +27,21 @@ RUN echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >
 ENV YARN_APT_KEY_URL "https://dl.yarnpkg.com/debian/pubkey.gpg"
 RUN echo "deb http://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list && curl -s ${YARN_APT_KEY_URL} | apt-key add - && apt-get update && apt-get install -y yarn
 
-# Create screenshot user
-RUN useradd -m screenshot
+# Create screenshot user, used for starting the service inside container
+RUN groupadd screenshot && useradd screenshot -m -g screenshot
+
+
+# Prepare workdir
+RUN mkdir -p ${SCREENSHOT_PATH}
+WORKDIR ${SCREENSHOT_PATH}
+
+# Copy screenshot code to container
+COPY . ${SCREENSHOT_PATH}/
+
+# Install screenshot service
+RUN yarn install
+
+# Install startup scripts and config
+COPY kubernetes/docker/scripts/* /usr/bin/
+COPY kubernetes/docker/etc/default/screenshot /etc/default/screenshot
+RUN chmod +x /usr/bin/*.sh
