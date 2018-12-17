@@ -1,0 +1,49 @@
+{% set service_port = "3002" %}
+{% set resources = {"requests": {"cpu": "1", "mem": "2G"}, "limits": {"cpu": "1", "mem": "2G"} } %}
+spec:
+  nodeSelector:
+    cloud.google.com/gke-nodepool: {{ K8S_NODEPOOL }}
+  containers:
+    - name: screenshot
+      command: ["/usr/bin/service-entrypoint.sh"]
+      image: "gcr.io/netlify-services/screenshot"
+      imagePullPolicy: Always
+      env:
+        - name: K8S_PROVIDER
+          value: {{ K8S_PROVIDER }}
+        - name: K8S_CLUSTER
+          value: {{ K8S_CLUSTER }}
+        - name: K8S_ROLE
+          value: {{ K8S_ROLE }}
+        - name: K8S_ENV
+          value: {{ K8S_ENV }}
+        - name: SERVICE_PORT
+          value: {{ service_port }}
+        - name: DATADOG_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+      ports:
+        - containerPort: {{ service_port }}
+      readinessProbe:
+        tcpSocket:
+          port: {{ service_port }}
+        periodSeconds: 2
+        successThreshold: 1
+        timeoutSeconds: 2
+        failureThreshold: 5
+      # Give K8S enough time to remove this Pod before actually sending the SIGTERM
+      # More info: https://github.com/kubernetes/kubernetes/issues/43576
+      lifecycle:
+        preStop:
+          exec:
+            command:
+            - /bin/sleep
+            - "10"
+      resources:
+        requests:
+          cpu: {{ resources["requests"]["cpu"] }}
+          memory: {{ resources["requests"]["mem"] }}
+        limits:
+          cpu: {{ resources["limits"]["cpu"] }}
+          memory: {{ resources["limits"]["mem"] }}
