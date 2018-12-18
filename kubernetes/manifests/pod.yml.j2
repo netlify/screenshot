@@ -1,31 +1,38 @@
 {% set app_name = "screenshot" -%}
 {% set service_port = "3002" %}
-{% set resources = {"requests": {"cpu": "1", "mem": "2G"}, "limits": {"cpu": "1", "mem": "2G"} } %}
+{% set resources = {"requests": {"cpu": "500m", "mem": "500M"}, "limits": {"cpu": "500m", "mem": "500M"} } %}
 ---
-apiVersion: apps/v1
-kind: StatefulSet
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
   name: {{ app_name }}
   namespace: {{ K8S_ENV }}
+  annotations:
+    git_commit: {{ BUILD_GIT_COMMIT }}
+    git_branch: {{ BUILD_GIT_BRANCH }}
 spec:
-  selector:
-    matchLabels:
-      name: {{ app_name }}
-  serviceName: {{ app_name }}
-  replicas: 1
+  revisionHistoryLimit: 3
+  minReadySeconds: 5
+  strategy:
+    rollingUpdate:
+      maxSurge: 15%
+      maxUnavailable: 0
+    type: RollingUpdate
   template:
     metadata:
-      labels:
-        name: {{ app_name }}
+      annotations:
         git_commit: {{ BUILD_GIT_COMMIT }}
         git_branch: {{ BUILD_GIT_BRANCH }}
+      labels:
+        app: {{ app_name }}
+        environment: {{ K8S_ENV }}
     spec:
       nodeSelector:
         cloud.google.com/gke-nodepool: {{ K8S_NODEPOOL }}
       containers:
         - name: {{ app_name }}
           command: ["/usr/bin/service-entrypoint.sh"]
-          image: "gcr.io/netlify-services/{{ app_name }}"
+          image: gcr.io/netlify-services/{{ app_name }}
           imagePullPolicy: Always
           env:
             - name: K8S_PROVIDER
@@ -35,7 +42,7 @@ spec:
             - name: K8S_ENV
               value: {{ K8S_ENV }}
             - name: SERVICE_PORT
-              value: {{ service_port }}
+              value: "{{ service_port }}"
             - name: DATADOG_HOST
               valueFrom:
                 fieldRef:
@@ -64,11 +71,14 @@ spec:
             limits:
               cpu: {{ resources["limits"]["cpu"] }}
               memory: {{ resources["limits"]["mem"] }}
-  volumeClaimTemplates:
-    - metadata:
-        name: {{ app_name }}
-      spec:
-        accessModes: [ "ReadWriteOnce" ]
-        resources:
-          requests:
-            storage: 1Gi
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ app_name }}
+  namespace: {{ K8S_ENV }}
+spec:
+  minAvailable: 60%
+  selector:
+    matchLabels:
+      app: {{ app_name }}
