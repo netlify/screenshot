@@ -45,3 +45,6 @@ RUN yarn install
 COPY kubernetes/docker/scripts/* /usr/bin/
 COPY kubernetes/docker/etc/default/screenshot /etc/default/screenshot
 RUN chmod +x /usr/bin/*.sh
+
+# Cleanup APT temporary packages
+RUN apt-get clean
