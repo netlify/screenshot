@@ -1,3 +1,0 @@
-export HOME=/home/bitballoon
-export CHROME_BIN=/usr/bin/google-chrome-stable
-export PORT=3002

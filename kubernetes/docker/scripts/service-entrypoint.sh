@@ -1,7 +1,6 @@
-#!/bin/bash
+#!/bin/dumb-init
 
 set -e
 
-source /etc/default/screenshot
-
-exec /usr/local/bin/node index.js
+cd $PWD
+exec gosu netlify "$@"

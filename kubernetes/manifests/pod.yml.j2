@@ -32,6 +32,7 @@ spec:
       containers:
         - name: {{ app_name }}
           command: ["/usr/bin/service-entrypoint.sh"]
+          args: ["/usr/local/bin/node", "index.js"]
           image: gcr.io/netlify-services/{{ app_name }}
           imagePullPolicy: Always
           env:
@@ -41,7 +42,7 @@ spec:
               value: {{ K8S_CLUSTER }}
             - name: K8S_ENV
               value: {{ K8S_ENV }}
-            - name: SERVICE_PORT
+            - name: PORT
               value: "{{ service_port }}"
             - name: DATADOG_HOST
               valueFrom:
