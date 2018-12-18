@@ -1,0 +1,85 @@
+{% set app_name = "screenshot" -%}
+{% set service_port = "3002" %}
+{% set resources = {"requests": {"cpu": "500m", "mem": "500M"}, "limits": {"cpu": "500m", "mem": "500M"} } %}
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ app_name }}
+  namespace: {{ K8S_ENV }}
+  annotations:
+    git_commit: {{ BUILD_GIT_COMMIT }}
+    git_branch: {{ BUILD_GIT_BRANCH }}
+spec:
+  revisionHistoryLimit: 3
+  minReadySeconds: 5
+  strategy:
+    rollingUpdate:
+      maxSurge: 15%
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        git_commit: {{ BUILD_GIT_COMMIT }}
+        git_branch: {{ BUILD_GIT_BRANCH }}
+      labels:
+        app: {{ app_name }}
+        environment: {{ K8S_ENV }}
+    spec:
+      nodeSelector:
+        cloud.google.com/gke-nodepool: {{ K8S_NODEPOOL }}
+      containers:
+        - name: {{ app_name }}
+          command: ["/usr/bin/service-entrypoint.sh"]
+          args: ["/usr/local/bin/node", "index.js"]
+          image: gcr.io/netlify-services/{{ app_name }}
+          imagePullPolicy: Always
+          env:
+            - name: K8S_PROVIDER
+              value: {{ K8S_PROVIDER }}
+            - name: K8S_CLUSTER
+              value: {{ K8S_CLUSTER }}
+            - name: K8S_ENV
+              value: {{ K8S_ENV }}
+            - name: PORT
+              value: "{{ service_port }}"
+            - name: DATADOG_HOST
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+          ports:
+            - containerPort: {{ service_port }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ service_port }}
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 2
+            failureThreshold: 5
+          # Give K8S enough time to remove this Pod before actually sending the SIGTERM
+          # More info: https://github.com/kubernetes/kubernetes/issues/43576
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                - /bin/sleep
+                - "10"
+          resources:
+            requests:
+              cpu: {{ resources["requests"]["cpu"] }}
+              memory: {{ resources["requests"]["mem"] }}
+            limits:
+              cpu: {{ resources["limits"]["cpu"] }}
+              memory: {{ resources["limits"]["mem"] }}
+---
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ app_name }}
+  namespace: {{ K8S_ENV }}
+spec:
+  minAvailable: 60%
+  selector:
+    matchLabels:
+      app: {{ app_name }}
