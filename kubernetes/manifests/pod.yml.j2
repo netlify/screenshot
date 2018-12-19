@@ -57,6 +57,14 @@ spec:
             successThreshold: 1
             timeoutSeconds: 2
             failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: "/url=http%3A%2F%2Fwww.google.com&width=1&height=1"
+              port: {{ service_port }}
+            periodSeconds: 2
+            successThreshold: 1
+            timeoutSeconds: 3
+            failureThreshold: 5
           # Give K8S enough time to remove this Pod before actually sending the SIGTERM
           # More info: https://github.com/kubernetes/kubernetes/issues/43576
           lifecycle:
