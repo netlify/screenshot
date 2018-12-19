@@ -1,6 +1,6 @@
 {% set app_name = "screenshot" -%}
 {% set service_port = "3002" %}
-{% set resources = {"requests": {"cpu": "500m", "mem": "500M"}, "limits": {"cpu": "500m", "mem": "500M"} } %}
+{% set resources = {"requests": {"cpu": "500m", "mem": "500M"}, "limits": {"cpu": "1", "mem": "500M"} } %}
 ---
 apiVersion: extensions/v1beta1
 kind: Deployment
